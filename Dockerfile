@@ -3,11 +3,12 @@ FROM node:18-alpine
 WORKDIR /usr/src/app
 
 COPY package*.json ./
+COPY yarn.lock ./
 
-RUN npm install
+RUN yarn install
 
-COPY . .
+COPY . ./
 
-RUN npm run build
+RUN yarn build
 
-ENTRYPOINT ["/bin/sh", "-c", "npm run start:dev"]
+CMD ["yarn", "start:dev"]
