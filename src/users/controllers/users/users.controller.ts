@@ -1,12 +1,18 @@
-import { Controller, Get, Post, Body, Req, Res, Param, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Req, Res, Param, Query, UsePipes, ValidationPipe, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dtos/CreateUser.dto';
 import { Request, Response } from 'express';
+import { UsersService } from 'src/users/services/users/users.service';
+import { ValidateCreateUserPipePipe } from 'src/users/pipes/validate-create-user-pipe/validate-create-user-pipe.pipe';
+import { AuthGuard } from 'src/users/guards/auth/auth.guard';
 
 @Controller('users')
+@UseGuards(AuthGuard)
 export class UsersController {
+  constructor(private userService: UsersService) {}
+
   @Get()
   getUsers() {
-    return { userName: 'John Doe', email: 'jd@gmail.com' }
+    return this.userService.fetchUsers()
   }
 
   // @Get()
@@ -22,9 +28,9 @@ export class UsersController {
   // }
 
   @Post('create')
-  createUser(@Body(ValidationPipe) userData: CreateUserDto) {
-    console.log(userData)
-    return {}
+  @UsePipes(ValidationPipe )
+  createUser(@Body(ValidateCreateUserPipePipe) userData: CreateUserDto) {
+    return this.userService.createUser(userData)
   }
 
   // can also use @Req and @Res decorators to access the request and response objects instead of using @Body and DTO
@@ -36,8 +42,8 @@ export class UsersController {
   // }
 
   @Get(':id')
-  getUserById(@Param('id') id: string) { // @Param('id') id: destructures the id from the params object, @Param() id returns an object id = { id: 2 }
-    return { userId: id }
+  getUserById(@Param('id', ParseIntPipe) id: number) { // @Param('id') id: destructures the id from the params object, @Param() id returns an object id = { id: 2 }
+    return this.userService.getUserById(id)
   }
 
   // @Get(':id')
